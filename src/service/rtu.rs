@@ -57,7 +57,11 @@ impl<T: AsyncRead + AsyncWrite + Unpin + 'static> Context<T> {
         let req_hdr = req_adu.hdr;
 
         self.service.send(req_adu).await?;
-        let res_adu = self.service.next().await.unwrap()?;
+        let res_adu = self
+            .service
+            .next()
+            .await
+            .ok_or_else(|| Error::new(ErrorKind::Other, "Service next returned None"))??;
 
         match res_adu.pdu {
             ResponsePdu(Ok(res)) => verify_response_header(req_hdr, res_adu.hdr).and(Ok(res)),
