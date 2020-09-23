@@ -33,7 +33,7 @@ pub use crate::slave::{Slave, SlaveId};
 ///////////////////////////////////////////////////////////////////
 /// Traits
 ///////////////////////////////////////////////////////////////////
-pub use crate::client::{Client, Reader, Writer};
+pub use crate::client::{BroadcastWriter, Client, Reader, Writer};
 
 #[cfg(feature = "sync")]
 pub use crate::client::sync::Client as SyncClient;
@@ -43,5 +43,8 @@ pub use crate::client::sync::Reader as SyncReader;
 
 #[cfg(feature = "sync")]
 pub use crate::client::sync::Writer as SyncWriter;
+
+#[cfg(feature = "sync")]
+pub use crate::client::sync::BroadcastWriter as SyncBroadcastWriter;
 
 pub use crate::slave::SlaveContext;
