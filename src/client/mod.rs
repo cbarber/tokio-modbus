@@ -87,6 +87,32 @@ pub trait Writer: Client {
     ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>>;
 }
 
+pub trait BroadcastWriter: Client {
+    fn broadcast_write_single_coil<'a>(
+        &'a mut self,
+        _: Address,
+        _: Coil,
+    ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>>;
+
+    fn broadcast_write_multiple_coils<'a>(
+        &'a mut self,
+        _: Address,
+        _: &[Coil],
+    ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>>;
+
+    fn broadcast_write_single_register<'a>(
+        &'a mut self,
+        _: Address,
+        _: Word,
+    ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>>;
+
+    fn broadcast_write_multiple_registers<'a>(
+        &'a mut self,
+        _: Address,
+        _: &[Word],
+    ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>>;
+}
+
 /// An asynchronous Modbus client context.
 pub struct Context {
     client: Box<dyn Client>,
@@ -332,6 +358,68 @@ impl Writer for Context {
             } else {
                 Err(Error::new(ErrorKind::InvalidData, "unexpected response"))
             }
+        })
+    }
+}
+
+impl BroadcastWriter for Context {
+    fn broadcast_write_single_coil<'a>(
+        &'a mut self,
+        addr: Address,
+        coil: Coil,
+    ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>> {
+        let request = self.client.call(Request::WriteSingleCoil(addr, coil));
+
+        Box::pin(async move {
+            request.await?;
+
+            Ok(())
+        })
+    }
+
+    fn broadcast_write_multiple_coils<'a>(
+        &'a mut self,
+        addr: Address,
+        coils: &[Coil],
+    ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>> {
+        let request = self
+            .client
+            .call(Request::WriteMultipleCoils(addr, coils.to_vec()));
+
+        Box::pin(async move {
+            request.await?;
+
+            Ok(())
+        })
+    }
+
+    fn broadcast_write_single_register<'a>(
+        &'a mut self,
+        addr: Address,
+        data: Word,
+    ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>> {
+        let request = self.client.call(Request::WriteSingleRegister(addr, data));
+
+        Box::pin(async move {
+            request.await?;
+
+            Ok(())
+        })
+    }
+
+    fn broadcast_write_multiple_registers<'a>(
+        &'a mut self,
+        addr: Address,
+        data: &[Word],
+    ) -> Pin<Box<dyn Future<Output = Result<(), Error>> + Send + 'a>> {
+        let request = self
+            .client
+            .call(Request::WriteMultipleRegisters(addr, data.to_vec()));
+
+        Box::pin(async move {
+            request.await?;
+
+            Ok(())
         })
     }
 }

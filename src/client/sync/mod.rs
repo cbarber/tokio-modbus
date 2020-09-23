@@ -44,6 +44,13 @@ pub trait Writer: Client {
     fn write_multiple_registers(&mut self, _: Address, _: &[Word]) -> Result<()>;
 }
 
+pub trait BroadcastWriter: Client {
+    fn broadcast_write_single_coil(&mut self, _: Address, _: Coil) -> Result<()>;
+    fn broadcast_write_multiple_coils(&mut self, _: Address, _: &[Coil]) -> Result<()>;
+    fn broadcast_write_single_register(&mut self, _: Address, _: Word) -> Result<()>;
+    fn broadcast_write_multiple_registers(&mut self, _: Address, _: &[Word]) -> Result<()>;
+}
+
 /// A synchronous Modbus client context.
 pub struct Context {
     core: tokio::runtime::Runtime,
